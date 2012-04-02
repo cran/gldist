@@ -35,12 +35,12 @@ gldist_do_rgl(double *x, double med, double iqr, double chi, double xi, int n) {
 
     double px;
     double alpha, beta;
-    double Sv[2], pv[2], ev[2];
+    double ev[2];
     double Sqv[3], qv[3] = {.25, .5, .75};
     double a, b, c;
     double S;
     int flag = 0;
-    int i, j;
+    int i;
 
     /* First check the special cases when chi in {-1, 1} and xi in {0, 1} */
     WHICH_CASE(flag, med, iqr, chi, xi);
@@ -64,22 +64,20 @@ gldist_do_rgl(double *x, double med, double iqr, double chi, double xi, int n) {
 
     case 3:
 	/* (chi == -1. && xi == 0.) */
-	c = log(3.);
-	a = med + iqr * log(2.) / c;
-	b = iqr / c;
-#define SFUN log(px)
-	DO_LOOP
-#undef	SFUN
+	a = iqr / log(3.);
+	for (i = 0; i < n; ++i) {
+	    px = unif_rand();
+	    x[i] = med + a * log(2. * px);
+	}
 	break;
 
     case 4:
 	/* (chi == 1. && xi == 0.) */
-	c = log(3.);
-	a = med - iqr * log(2.) / c;
-	b = - iqr / c;
-#define	SFUN log(1. - px)
-	DO_LOOP
-#undef  SFUN
+	a = -iqr / log(3.);
+	for (i = 0; i < n; ++i) {
+	    px = unif_rand();
+	    x[i] = med + a * log(2. - 2. * px);
+	}
 	break;
 
     case 5:
@@ -183,7 +181,7 @@ gldist_rgl(SEXP n, SEXP med, SEXP iqr, SEXP chi, SEXP xi) {
     PROTECT(x = allocVector(REALSXP, len));
     if (len == 0) {
 	UNPROTECT(1);
-	return(x);
+	return x;
     }
 
     /* Compute quantiles */

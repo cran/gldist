@@ -1,9 +1,9 @@
 Package: gldist
-Version: 2160.1
-Revision: 5289
+Version: 2160.2
+Revision: 5308
 Title: An Asymmetry-Steepness Parameterization of the Generalized
         Lambda Distribution.
-Date: 2012-03-27
+Date: 2012-04-02
 Author: Yohan Chalabi and Diethelm Wuertz
 Depends: R (>= 2.14.0)
 Suggests: RUnit
@@ -27,6 +27,6 @@ Description: The generalized lambda distribution (GLD) is a versatile
         the most time consuming loops (tested with icc 12.1.0). The
         package includes the usual distribution functions, fitting
         routines and a shape plot function.
-Packaged: 2012-03-27 09:16:29 UTC; yankee
+Packaged: 2012-04-02 14:33:12 UTC; yohan
 Repository: CRAN
-Date/Publication: 2012-03-27 12:56:22
+Date/Publication: 2012-04-02 17:59:04

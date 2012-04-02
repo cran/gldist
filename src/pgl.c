@@ -26,7 +26,7 @@ gldist_zeroin_Newton(double y, double a, double b, double (*f)(double x, void *i
     double fa, fb;
     double c, fc;
     double p, q;
-    double prev_step, new_step;
+    double new_step;
     double tol_act;
     int maxit = *Maxit + 1;
 
@@ -37,11 +37,11 @@ gldist_zeroin_Newton(double y, double a, double b, double (*f)(double x, void *i
     fb = (*f)(b, info) - y;
 
     /* test if we have found a root at an endpoint */
-    if(fa == 0.) {
+    if(fabs(fa) < 2 * EPS) {
         *Maxit = 0;
         return a;
     }
-    if(fb == 0.) {
+    if(fabs(fb) < 2 * EPS) {
         *Maxit = 0;
         return b;
     }
@@ -53,7 +53,7 @@ gldist_zeroin_Newton(double y, double a, double b, double (*f)(double x, void *i
 	b = 1.;
 	fa = (*f)(a, info) - y;
 	fb = (*f)(b, info) - y;
-	if (fa * fb > 0) return(R_NaN);
+	if (fa * fb > 0) return R_NaN;
     }
 
     while (maxit--) {
@@ -115,9 +115,9 @@ cmp(const void *a, const void *b)
     const double *bb = *(double**)b;
     int naa = ISNAN(*aa);
     int nab = ISNAN(*bb);
-    if (naa && nab) return(0);
-    if (naa) return(1);
-    if (nab) return(-1);
+    if (naa && nab) return 0;
+    if (naa) return 1;
+    if (nab) return -1;
     return (*aa < *bb) - (*aa > *bb);
 }
 
@@ -153,16 +153,12 @@ gldist_do_pgl(double *p, double * const q, double med, double iqr,
        auto-vectorize the calls to mathematical functions. */
 
     double px, qx;
-    double *qrange = (double*) R_alloc(2, sizeof(double));
     double qmin, qmax;
-    double prange[2] = {0., 1.};
     double alpha, beta;
-    double Sv[2], pv[2], ev[2];
+    double ev[2];
     double Sqv[3], qv[3] = {.25, .5, .75};
     double a, b, c;
-    double S;
-    double x, y;
-    double * pars = (double*) R_alloc(3, sizeof(double));
+    double y;
     int flag = 0;
     int i, maxiter;
     double **ptr;
@@ -185,11 +181,8 @@ gldist_do_pgl(double *p, double * const q, double med, double iqr,
 
     case 3:
 	/* (chi == -1. && xi == 0.) */
-	c = log(3.);
-	a = med + iqr * log(2.) / c;
-	b = iqr / c;
-        qmin = -INFINITY;
-        qmax = a;
+	qmin = -INFINITY;
+	qmax = med + iqr * log(2.)/log(3.);
 	for (i = 0; i < n; ++i) {
 	    qx = q[i];
 	    if (ISNAN(qx)) {
@@ -199,8 +192,7 @@ gldist_do_pgl(double *p, double * const q, double med, double iqr,
 	    } else if (qx >= qmax) {
 		px = 1.;
 	    } else {
-		y = (qx - a) / b;
-		px = exp(y);
+		px = .5 * pow(3., (qx - med)/iqr);
 	    }
 	    p[i] = px;
 	}
@@ -208,11 +200,8 @@ gldist_do_pgl(double *p, double * const q, double med, double iqr,
 
     case 4:
 	/* (chi == 1. && xi == 0.) */
-	c = log(3.);
-	a = med - iqr * log(2.) / c;
-	b = - iqr / c;
-        qmin = a;
-        qmax = INFINITY;
+	qmin = med - iqr * log(2.)/log(3.);
+	qmax = INFINITY;
 	for (i = 0; i < n; ++i) {
 	    qx = q[i];
 	    if (ISNAN(qx)) {
@@ -222,8 +211,7 @@ gldist_do_pgl(double *p, double * const q, double med, double iqr,
 	    } else if (qx >= qmax) {
 		px = 1.;
 	    } else {
-		y = (qx - a) / b;
-		px = 1. - exp(y);
+		px = 1. - .5 * pow(3., (med - qx)/iqr);
 	    }
 	    p[i] = px;
 	}
